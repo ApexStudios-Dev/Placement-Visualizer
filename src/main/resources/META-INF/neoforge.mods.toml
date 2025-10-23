@@ -1,0 +1,32 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "Mozilla Public License Version 2.0"
+issueTrackerURL = "https://github.com/ApexStudios-Dev/Placement-Visualizer/issues"
+
+[[mods]]
+modId = "placementvisualizer"
+version = "${file.jarVersion}"
+displayName = "Placement Visualizer"
+credits = "Apex - Programming"
+authors = "ApexStudios"
+description = "Displays a in world preview of the block you are trying to place"
+#logoFile = "logo.png"
+displayURL = "https://modrinth.com/mod/placement-visualizer"
+
+[[dependencies.placementvisualizer]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.10,1.21.11)"
+ordering = "NONE"
+side = "BOTH"
+[[dependencies.placementvisualizer]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.10-beta,21.11)"
+ordering = "NONE"
+side = "BOTH"
+
+#[[accessTransformers]]
+#file = "META-INF/accesstransformer.cfg"
+#[[mixins]]
+#config = "META-INF/apexcore.mixins.json"
