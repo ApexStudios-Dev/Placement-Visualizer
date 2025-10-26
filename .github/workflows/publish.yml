@@ -7,17 +7,12 @@ on:
     paths: [ '**/src/**' ]
 
 jobs:
-  publish-mod:
-    uses: ApexStudios-Dev/.github/.github/workflows/_publish-mod.yml@master
+  publish-library:
+    uses: ApexStudios-Dev/.github/.github/workflows/_publish-library.yml@master
     secrets: inherit
     with:
       java-version: 21
       java-vendor: temurin
       publish-task: ':publishReleasePublicationToApexStudios-ReleasesRepository'
-      curseforge-id: '550778'
-      modrinth-id: 'xl3myxch'
-      artifact-id: placementvisualizer
       display-name: Placement Visualizer
-      release-type: release
-      logo-url: 'https://raw.githubusercontent.com/ApexStudios-Dev/.github/refs/heads/master/assets/minecraft/apexcore/banner.png'
-      color: 0x3358FA
+      color: 0xeb052f
