@@ -7,7 +7,7 @@
 Placement Visualizer is a development library and is not intended for end-users to download directly. It can not be found on platforms like CurseForge or Modrinth.
 To use it, you must add it as a dependency in your mod's `build.gradle` file.
 
-The library is available through our [Maven repository](https://maven.apexstudios.dev/releases).
+The library is available through our [Maven repository](https://maven.apexstudios.dev/#/releases/dev/apexstudios/placementvisualizer).
 
 <details>
 <summary> Groovy DSL (build.gradle) </summary>
