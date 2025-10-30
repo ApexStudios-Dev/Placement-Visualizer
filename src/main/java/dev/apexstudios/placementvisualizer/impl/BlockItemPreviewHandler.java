@@ -13,8 +13,10 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.state.LevelRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -71,9 +73,24 @@ final class BlockItemPreviewHandler implements PlacementPreviewHandler<BlockItem
         // 3) determine default block state
         var defaultBlockState = NeoForge.EVENT_BUS.post(new BlockItemPlacementEvent.GetDefaultBlockState(placeContext, block)).blockState();
 
-        // 4) determine placement block state
+        // 4) load block state data from data components
+        // copied from 'BlockItem#updateBlockStateFromTag'
+        // since vanilla tries to 'setBlock' if state changed
+        var blockStateProperties = stack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+
+        // load block properties onto default block state
+        if(!blockStateProperties.isEmpty()) {
+            defaultBlockState = blockStateProperties.apply(defaultBlockState);
+        }
+
+        // 5) determine placement block state
         var eventGPBS = NeoForge.EVENT_BUS.post(new BlockItemPlacementEvent.GetPlacementBlockState(placeContext, defaultBlockState));
         var placementBlockState = eventGPBS.blockState();
+
+        // load block properties onto placement block state
+        if(!blockStateProperties.isEmpty()) {
+            placementBlockState = blockStateProperties.apply(placementBlockState);
+        }
 
         // canceling this event means block placement failed
         // similar result to returning null in 'Block.getStateForPlacement'
@@ -81,16 +98,16 @@ final class BlockItemPreviewHandler implements PlacementPreviewHandler<BlockItem
             canPlace = false;
         }
 
-        // 5) strip invalid block states
+        // 6) strip invalid block states
         // by default this strips out waterlogged
         placementBlockState = NeoForge.EVENT_BUS.post(new BlockItemPlacementEvent.StripInvalidProperties(defaultBlockState, placementBlockState)).placementBlockState();
 
-        // 6) collect additional block states
+        // 7) collect additional block states
         var blockStates = new Long2ObjectOpenHashMap<BlockState>();
         NeoForge.EVENT_BUS.post(new BlockItemPlacementEvent.CollectAdditionalBlockStates(placeContext, placementBlockState, blockStates));
         blockStates.put(placeContext.getClickedPos().asLong(), placementBlockState); // ensure origin point can not be overwritten
 
-        // 7) return finalized render state
+        // 8) return finalized render state
         return new State(
                 level,
                 canPlace,
