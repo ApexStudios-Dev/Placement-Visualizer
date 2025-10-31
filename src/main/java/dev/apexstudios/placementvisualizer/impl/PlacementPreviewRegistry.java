@@ -18,6 +18,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 public final class PlacementPreviewRegistry {
     private static final Map<ResourceLocation, PlacementPreviewHandler<?>> REGISTRY = Maps.newConcurrentMap();
     private static final ContextKey<State<?>> KEY = new ContextKey<>(PlacementVisualizer.identifier("render_state"));
+    public static final ResourceLocation DEBUG_KEY = PlacementVisualizer.identifier("force_render");
 
     public static void register(ResourceLocation registryName, PlacementPreviewHandler<?> handler) {
         if(REGISTRY.putIfAbsent(registryName, handler) != null) {
@@ -32,7 +33,7 @@ public final class PlacementPreviewRegistry {
             return;
         }
 
-        var forceRender = true;
+        var forceRender = Minecraft.getInstance().debugEntries.isCurrentlyEnabled(DEBUG_KEY);
 
         if(hitResult.getType() == HitResult.Type.MISS && !forceRender) {
             return;
