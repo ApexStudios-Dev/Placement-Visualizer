@@ -2,25 +2,29 @@ package dev.apexstudios.placementvisualizer.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import dev.apexstudios.placementvisualizer.api.AlphaVertexConsumer;
 import dev.apexstudios.placementvisualizer.api.BlockItemPlacementEvent;
+import dev.apexstudios.placementvisualizer.api.GhostRenderUtils;
 import dev.apexstudios.placementvisualizer.api.PlacementPreviewHandler;
 import dev.apexstudios.placementvisualizer.api.PlacementRenderTypes;
+import dev.apexstudios.placementvisualizer.impl.node.GhostNodeStorage;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import java.util.List;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.state.LevelRenderState;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
 final class BlockItemPreviewHandler implements PlacementPreviewHandler<BlockItemPreviewHandler.State> {
     @Override
     @Nullable
-    public State extract(Level level, BlockHitResult hitResult, Player player, InteractionHand hand) {
+    public State extract(LevelRenderState levelState, Level level, BlockHitResult hitResult, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
 
         if(stack.isEmpty()) {
@@ -71,9 +75,24 @@ final class BlockItemPreviewHandler implements PlacementPreviewHandler<BlockItem
         // 3) determine default block state
         var defaultBlockState = NeoForge.EVENT_BUS.post(new BlockItemPlacementEvent.GetDefaultBlockState(placeContext, block)).blockState();
 
-        // 4) determine placement block state
+        // 4) load block state data from data components
+        // copied from 'BlockItem#updateBlockStateFromTag'
+        // since vanilla tries to 'setBlock' if state changed
+        var blockStateProperties = stack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+
+        // load block properties onto default block state
+        if(!blockStateProperties.isEmpty()) {
+            defaultBlockState = blockStateProperties.apply(defaultBlockState);
+        }
+
+        // 5) determine placement block state
         var eventGPBS = NeoForge.EVENT_BUS.post(new BlockItemPlacementEvent.GetPlacementBlockState(placeContext, defaultBlockState));
         var placementBlockState = eventGPBS.blockState();
+
+        // load block properties onto placement block state
+        if(!blockStateProperties.isEmpty()) {
+            placementBlockState = blockStateProperties.apply(placementBlockState);
+        }
 
         // canceling this event means block placement failed
         // similar result to returning null in 'Block.getStateForPlacement'
@@ -81,42 +100,53 @@ final class BlockItemPreviewHandler implements PlacementPreviewHandler<BlockItem
             canPlace = false;
         }
 
-        // 5) strip invalid block states
+        // 6) strip invalid block states
         // by default this strips out waterlogged
         placementBlockState = NeoForge.EVENT_BUS.post(new BlockItemPlacementEvent.StripInvalidProperties(defaultBlockState, placementBlockState)).placementBlockState();
 
-        // 6) collect additional block states
+        // 7) collect additional block states
         var blockStates = new Long2ObjectOpenHashMap<BlockState>();
         NeoForge.EVENT_BUS.post(new BlockItemPlacementEvent.CollectAdditionalBlockStates(placeContext, placementBlockState, blockStates));
         blockStates.put(placeContext.getClickedPos().asLong(), placementBlockState); // ensure origin point can not be overwritten
 
-        // 7) return finalized render state
+        // 8) Extract block entity render states
+        var blockEntityRenderStates = BlockEntityPreviewHandler.extractAll(levelState, level, 0F, stack, blockStates);
+
+        // 9) return finalized render state
         return new State(
                 level,
                 canPlace,
-                Long2ObjectMaps.unmodifiable(blockStates)
+                Long2ObjectMaps.unmodifiable(blockStates),
+                blockEntityRenderStates
         );
     }
 
     @Override
-    public void submit(PoseStack pose, SubmitNodeCollector collector, LevelRenderState levelState, State state) {
+    public void submit(RenderLevelStageEvent event, GhostNodeStorage collector, State state) {
+        collector.validPlacement(state.canPlace);
+
+        var levelState = event.getLevelRenderState();
+
+        var pose = event.getPoseStack();
         pose.pushPose();
         pose.translate(levelState.cameraRenderState.pos.scale(-1D));
 
-        collector.submitCustomGeometry(pose, PlacementRenderTypes.TRANSLUCENT_NO_DEPTH, state::render);
+        if(event instanceof RenderLevelStageEvent.AfterTranslucentBlocks) {
+            GhostRenderUtils.submitGhost(collector, pose, PlacementRenderTypes.translucentNoDepth(), state::render);
+        } else if(event instanceof RenderLevelStageEvent.AfterEntities) {
+            BlockEntityPreviewHandler.submitAll(pose, collector, levelState, state.blockEntityRenderStates);
+        }
+
         pose.popPose();
     }
 
-    record State(LevelAccessor level, boolean canPlace, Long2ObjectMap<BlockState> blockStates) {
-        public void render(PoseStack.Pose pose, VertexConsumer consumer) {
-            var overlay = canPlace ? OverlayTexture.NO_OVERLAY : OverlayTexture.pack(OverlayTexture.RED_OVERLAY_V, OverlayTexture.NO_WHITE_U);
-            var wrapped = new AlphaVertexConsumer(consumer, 190);
-
+    record State(LevelAccessor level, boolean canPlace, Long2ObjectMap<BlockState> blockStates, List<BlockEntityRenderState> blockEntityRenderStates) {
+        public void render(PoseStack pose, VertexConsumer consumer) {
             for(var entry : blockStates.long2ObjectEntrySet()) {
                 var pos = BlockPos.of(entry.getLongKey());
                 var blockState = entry.getValue();
 
-                PlacementPreviewHandler.renderBlockState(pose, wrapped, level, pos, blockState, overlay);
+                GhostRenderUtils.renderBlockState(pose, consumer, level, pos, blockState, canPlace);
             }
         }
     }
