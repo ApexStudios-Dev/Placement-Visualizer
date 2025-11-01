@@ -23,8 +23,6 @@ public final class PlacementVisualizer {
                 false,
                 Pack.Position.TOP
         ));
-
-        // TODO: Remove me
     }
 
     public static ResourceLocation identifier(String identifier) {
