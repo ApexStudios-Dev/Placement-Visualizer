@@ -65,10 +65,18 @@ final class BlockItemPreviewHandler implements PlacementPreviewHandler<BlockItem
         // 2) calculate placement context
         var eventUPC = NeoForge.EVENT_BUS.post(new BlockItemPlacementEvent.UpdatePlacementContext(level, player, hand, stack, hitResult));
         var placeContext = eventUPC.placeContext();
+        var placementPos = placeContext.getClickedPos();
 
         // placement failed if invalid context or event was cancelled
         // similar result to returning null in 'BlockItem.updatePlacementContext'
         if(canPlace && (!placeContext.canPlace() || eventUPC.isCanceled())) {
+            canPlace = false;
+        }
+
+        // mark as invalid placement if out of bounds
+        // 'level.isInWorldBounds' only checks the max/min world bounds
+        // but we are after the world border bounds
+        if(canPlace && !level.getWorldBorder().isWithinBounds(placementPos)) {
             canPlace = false;
         }
 
@@ -107,7 +115,7 @@ final class BlockItemPreviewHandler implements PlacementPreviewHandler<BlockItem
         // 7) collect additional block states
         var blockStates = new Long2ObjectOpenHashMap<BlockState>();
         NeoForge.EVENT_BUS.post(new BlockItemPlacementEvent.CollectAdditionalBlockStates(placeContext, placementBlockState, blockStates));
-        blockStates.put(placeContext.getClickedPos().asLong(), placementBlockState); // ensure origin point can not be overwritten
+        blockStates.put(placementPos.asLong(), placementBlockState); // ensure origin point can not be overwritten
 
         // 8) Extract block entity render states
         var blockEntityRenderStates = BlockEntityPreviewHandler.extractAll(levelState, level, 0F, stack, blockStates);
