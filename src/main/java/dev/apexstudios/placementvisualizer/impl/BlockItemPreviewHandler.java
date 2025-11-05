@@ -80,6 +80,12 @@ final class BlockItemPreviewHandler implements PlacementPreviewHandler<BlockItem
             canPlace = false;
         }
 
+        // make as invalid placement if gamemode or data components dictate so
+        // mainly for adventure mode + 'can_place_on' data component
+        if(canPlace && !player.mayUseItemAt(placementPos, hitResult.getDirection(), stack)) {
+            canPlace = false;
+        }
+
         // 3) determine default block state
         var defaultBlockState = NeoForge.EVENT_BUS.post(new BlockItemPlacementEvent.GetDefaultBlockState(placeContext, block)).blockState();
 
