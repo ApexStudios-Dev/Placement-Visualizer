@@ -1,13 +1,14 @@
 {
-  "required": true,
-  "package": "dev.apexstudios.placementvisualizer.mixin",
-  "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "BlockItemAccessor"
-  ],
-  "client": [
-    "EmptyTextureStateShardAccessor"
-  ],
-  "server": [],
-  "minVersion": "0.8"
+    "required": true,
+    "package": "dev.apexstudios.placementvisualizer.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "mixins": [
+        "BlockItemAccessor"
+    ],
+    "client": [
+        "RenderTypeAccessor",
+        "RenderSetupAccessor"
+    ],
+    "server": [],
+    "minVersion": "0.8"
 }

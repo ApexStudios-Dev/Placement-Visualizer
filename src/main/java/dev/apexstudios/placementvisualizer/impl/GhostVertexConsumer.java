@@ -1,6 +1,7 @@
 package dev.apexstudios.placementvisualizer.impl;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.util.ARGB;
 import org.jetbrains.annotations.Nullable;
 
 public final class GhostVertexConsumer implements VertexConsumer {
@@ -40,6 +41,16 @@ public final class GhostVertexConsumer implements VertexConsumer {
     }
 
     @Override
+    public VertexConsumer setColor(int color) {
+        return setColor(
+                ARGB.red(color),
+                ARGB.green(color),
+                ARGB.blue(color),
+                ARGB.alpha(color)
+        );
+    }
+
+    @Override
     public VertexConsumer setUv(float u, float v) {
         if(delegate != null) {
             delegate.setUv(u, v);
@@ -70,6 +81,15 @@ public final class GhostVertexConsumer implements VertexConsumer {
     public VertexConsumer setNormal(float normalX, float normalY, float normalZ) {
         if(delegate != null) {
             delegate.setNormal(normalX, normalY, normalZ);
+        }
+
+        return this;
+    }
+
+    @Override
+    public VertexConsumer setLineWidth(float width) {
+        if(delegate != null) {
+            delegate.setLineWidth(width);
         }
 
         return this;

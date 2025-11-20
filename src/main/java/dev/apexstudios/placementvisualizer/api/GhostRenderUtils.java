@@ -3,18 +3,19 @@ package dev.apexstudios.placementvisualizer.api;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.apexstudios.placementvisualizer.impl.GhostVertexConsumer;
-import dev.apexstudios.placementvisualizer.mixin.EmptyTextureStateShardAccessor;
+import dev.apexstudios.placementvisualizer.mixin.RenderSetupAccessor;
+import dev.apexstudios.placementvisualizer.mixin.RenderTypeAccessor;
 import java.util.function.BiConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -40,17 +41,17 @@ public interface GhostRenderUtils {
     static <T> void submitModel(OrderedSubmitNodeCollector collector, PoseStack poseStack, RenderType renderType, Model<T> model, T modelState, @Nullable TextureAtlasSprite sprite, int light, int overlay, int tintColor, boolean validPlacement) {
         submitGhost(collector, poseStack, PlacementRenderTypes.translucentNoDepth(extractTexture(sprite, renderType)), (stack, consumer) -> {
             model.setupAnim(modelState);
-            model.renderToBuffer(stack, wrap(sprite, consumer), light, overlay, validPlacement ? tintColor : CommonColors.SOFT_RED);
+            model.renderToBuffer(stack, wrap(sprite, consumer), light, overlay, validPlacement ?
+                                                                                tintColor :
+                                                                                CommonColors.SOFT_RED);
         });
     }
 
     static void submitModelPart(OrderedSubmitNodeCollector collector, PoseStack poseStack, RenderType renderType, ModelPart modelPart, @Nullable TextureAtlasSprite sprite, int light, int overlay, int tintColor, boolean validPlacement) {
-        submitGhost(
-                collector,
-                poseStack,
-                PlacementRenderTypes.translucentNoDepth(extractTexture(sprite, renderType)),
-                (stack, consumer) -> modelPart.render(stack, wrap(sprite, consumer), light, overlay, validPlacement ? tintColor : CommonColors.SOFT_RED)
-        );
+        submitGhost(collector, poseStack, PlacementRenderTypes.translucentNoDepth(extractTexture(sprite, renderType)), (stack, consumer) -> modelPart.render(stack, wrap(sprite, consumer), light, overlay,
+                validPlacement ?
+                tintColor :
+                CommonColors.SOFT_RED));
     }
 
     static void renderBlockState(PoseStack poseStack, VertexConsumer consumer, BlockAndTintGetter level, BlockPos pos, BlockState blockState, boolean validPlacement) {
@@ -60,38 +61,29 @@ public interface GhostRenderUtils {
         poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
 
         // Copy of MovingBlockRenderState render logic in BlockFeatureRenderer
-        var modelParts = blockRenderDispatcher.getBlockModel(blockState).collectParts(
-                level,
-                pos,
-                blockState,
-                RandomSource.create(blockState.getSeed(pos))
-        );
+        var modelParts = blockRenderDispatcher.getBlockModel(blockState)
+                                              .collectParts(level, pos, blockState, RandomSource.create(blockState.getSeed(pos)));
 
-        blockRenderDispatcher.getModelRenderer().tesselateBlock(
-                level,
-                modelParts,
-                blockState,
-                pos,
-                poseStack,
-                consumer,
-                false,
-                validPlacement ? OverlayTexture.NO_OVERLAY : OverlayTexture.pack(OverlayTexture.RED_OVERLAY_V, OverlayTexture.NO_WHITE_U)
-        );
+        blockRenderDispatcher.getModelRenderer()
+                             .tesselateBlock(level, modelParts, blockState, pos, poseStack, consumer, false,
+                                     validPlacement ?
+                                     OverlayTexture.NO_OVERLAY :
+                                     OverlayTexture.pack(OverlayTexture.RED_OVERLAY_V, OverlayTexture.NO_WHITE_U));
 
         poseStack.popPose();
     }
 
-    static ResourceLocation extractTexture(@Nullable TextureAtlasSprite sprite, RenderType renderType) {
+    static Identifier extractTexture(@Nullable TextureAtlasSprite sprite, RenderType renderType) {
         if(sprite != null) {
             return sprite.atlasLocation();
         }
 
-        if(renderType instanceof RenderType.CompositeRenderType composite) {
-            var texture = ((EmptyTextureStateShardAccessor) composite.state.textureState).PlacementVisualizer$getCutoutTexture();
+        var state = ((RenderTypeAccessor) renderType).PlacementVisualizer$getState();
+        var textures = ((RenderSetupAccessor) state).PlacementVisualizer$getTextures();
+        var texture = textures.get("Sampler0");
 
-            if(texture.isPresent()) {
-                return texture.get();
-            }
+        if(texture != null) {
+            return texture.location();
         }
 
         return TextureAtlas.LOCATION_BLOCKS;

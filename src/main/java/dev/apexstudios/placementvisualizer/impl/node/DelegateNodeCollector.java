@@ -7,15 +7,14 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
@@ -42,13 +41,6 @@ public class DelegateNodeCollector implements SubmitNodeCollector {
     @Override
     public OrderedSubmitNodeCollector order(int index) {
         return delegate == null ? this : delegate;
-    }
-
-    @Override
-    public void submitHitbox(PoseStack poseStack, EntityRenderState entityRenderState, HitboxesRenderState hitboxesRenderState) {
-        if(delegate != null) {
-            delegate.submitHitbox(poseStack, entityRenderState, hitboxesRenderState);
-        }
     }
 
     @Override
@@ -83,6 +75,20 @@ public class DelegateNodeCollector implements SubmitNodeCollector {
     public void submitLeash(PoseStack poseStack, EntityRenderState.LeashState leashState) {
         if(delegate != null) {
             delegate.submitLeash(poseStack, leashState);
+        }
+    }
+
+    @Override
+    public <S> void submitModel(Model<? super S> model, S renderState, PoseStack poseStack, RenderType renderType, int packedLight, int packedOverlay, int tintColor, @Nullable TextureAtlasSprite sprite, int outlineColor, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+        if(delegate != null) {
+            delegate.submitModel(model, renderState, poseStack, renderType, packedLight, packedOverlay, tintColor, sprite, outlineColor, crumblingOverlay);
+        }
+    }
+
+    @Override
+    public void submitModelPart(ModelPart modelPart, PoseStack poseStack, RenderType renderType, int packedLight, int packedOverlay, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintColor, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, int outlineColor) {
+        if(delegate != null) {
+            delegate.submitModelPart(modelPart, poseStack, renderType, packedLight, packedOverlay, sprite);
         }
     }
 
@@ -125,20 +131,6 @@ public class DelegateNodeCollector implements SubmitNodeCollector {
     public void submitParticleGroup(SubmitNodeCollector.ParticleGroupRenderer renderer) {
         if(delegate != null) {
             delegate.submitParticleGroup(renderer);
-        }
-    }
-
-    @Override
-    public <S> void submitModel(Model<? super S> model, S renderState, PoseStack poseStack, RenderType renderType, int packedLight, int packedOverlay, int tintColor, @Nullable TextureAtlasSprite sprite, int outlineColor, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
-        if(delegate != null) {
-            delegate.submitModel(model, renderState, poseStack, renderType, packedLight, packedOverlay, tintColor, sprite, outlineColor, crumblingOverlay);
-        }
-    }
-
-    @Override
-    public void submitModelPart(ModelPart modelPart, PoseStack poseStack, RenderType renderType, int packedLight, int packedOverlay, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintColor, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, int outlineColor) {
-        if(delegate != null) {
-            delegate.submitModelPart(modelPart, poseStack, renderType, packedLight, packedOverlay, sprite);
         }
     }
 }

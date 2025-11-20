@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.state.LevelRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.BlockHitResult;
@@ -17,11 +17,11 @@ import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 public final class PlacementPreviewRegistry {
-    private static final Map<ResourceLocation, PlacementPreviewHandler<?>> REGISTRY = Maps.newConcurrentMap();
+    public static final Identifier DEBUG_KEY = PlacementVisualizer.identifier("force_render");
+    private static final Map<Identifier, PlacementPreviewHandler<?>> REGISTRY = Maps.newConcurrentMap();
     private static final ContextKey<State<?>> KEY = new ContextKey<>(PlacementVisualizer.identifier("render_state"));
-    public static final ResourceLocation DEBUG_KEY = PlacementVisualizer.identifier("force_render");
 
-    public static void register(ResourceLocation registryName, PlacementPreviewHandler<?> handler) {
+    public static void register(Identifier registryName, PlacementPreviewHandler<?> handler) {
         if(REGISTRY.putIfAbsent(registryName, handler) != null) {
             throw new IllegalStateException("Duplicate PlacementPreviewHandler registration: " + registryName);
         }
