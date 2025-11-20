@@ -1,9 +1,5 @@
 package dev.apexstudios.placementvisualizer.api;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.apexstudios.placementvisualizer.impl.PlacementVisualizer;
 import java.util.function.BiFunction;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -17,10 +13,13 @@ import net.minecraft.util.Util;
 public interface PlacementRenderTypes {
     // Render type for block ghosting effect
     BiFunction<Identifier, Boolean, RenderType> TRANSLUCENT_NO_DEPTH = Util.memoize((texture, outline) -> RenderType.create(PlacementVisualizer.id("translucent_no_depth"), RenderSetup
-            .builder(Pipelines.TRANSLUCENT_NO_DEPTH)
+            .builder(RenderPipelines.ENTITY_TRANSLUCENT_EMISSIVE)
             .withTexture("Sampler0", texture)
             .useLightmap()
             .useOverlay() // needed for overlay texture to render
+            .affectsCrumbling()
+            .sortOnUpload()
+            .setOutline(outline ? RenderSetup.OutlineProperty.AFFECTS_OUTLINE : RenderSetup.OutlineProperty.NONE)
             .setOutputTarget(OutputTarget.OUTLINE_TARGET) // needed to not render behind translucent objects
             .createRenderSetup()
     ));
@@ -39,18 +38,5 @@ public interface PlacementRenderTypes {
 
     static RenderType translucentNoDepth() {
         return translucentNoDepth(true);
-    }
-
-    interface Pipelines {
-        RenderPipeline TRANSLUCENT_NO_DEPTH = RenderPipelines.TRANSLUCENT_MOVING_BLOCK
-                .toBuilder()
-                .withLocation(PlacementVisualizer.identifier("pipeline/translucent_no_depth"))
-                .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-                // needed in order for overlay texture to render
-                .withVertexShader("core/entity")
-                .withFragmentShader("core/entity")
-                .withSampler("Sampler1")
-                .withVertexFormat(DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS)
-                .build();
     }
 }

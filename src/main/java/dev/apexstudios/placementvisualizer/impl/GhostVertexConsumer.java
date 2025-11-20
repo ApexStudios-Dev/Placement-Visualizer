@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 
 public final class GhostVertexConsumer implements VertexConsumer {
     public static final GhostVertexConsumer INSTANCE = new GhostVertexConsumer();
-    public static final int GHOST_ALPHA = 190;
 
     @Nullable
     private VertexConsumer delegate;
@@ -33,21 +32,22 @@ public final class GhostVertexConsumer implements VertexConsumer {
 
     @Override
     public VertexConsumer setColor(int r, int g, int b, int a) {
-        if(delegate != null) {
-            delegate.setColor(r, g, b, (a * GHOST_ALPHA) / 0xFF);
-        }
-
-        return this;
+        return setColor(ARGB.color(a, r, g, b));
     }
 
     @Override
     public VertexConsumer setColor(int color) {
-        return setColor(
-                ARGB.red(color),
-                ARGB.green(color),
-                ARGB.blue(color),
-                ARGB.alpha(color)
-        );
+        if(delegate != null) {
+            var col = ARGB.opaque(color);
+            col = ARGB.setBrightness(col, .5F);
+
+            var a = (ARGB.alpha(color) * 145) / 0xFF;
+            var ghost = ARGB.color(a, col);
+
+            delegate.setColor(ghost);
+        }
+
+        return this;
     }
 
     @Override

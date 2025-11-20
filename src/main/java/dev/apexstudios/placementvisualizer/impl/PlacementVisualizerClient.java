@@ -2,7 +2,6 @@ package dev.apexstudios.placementvisualizer.impl;
 
 import dev.apexstudios.placementvisualizer.api.BlockItemPlacementEvent;
 import dev.apexstudios.placementvisualizer.api.PlacementPreviewHandler;
-import dev.apexstudios.placementvisualizer.api.PlacementRenderTypes;
 import dev.apexstudios.placementvisualizer.mixin.BlockItemAccessor;
 import net.minecraft.client.gui.components.debug.DebugEntryNoop;
 import net.minecraft.world.item.BlockItem;
@@ -16,7 +15,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
 import net.neoforged.neoforge.client.event.RegisterDebugEntriesEvent;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -29,7 +27,6 @@ public final class PlacementVisualizerClient {
 
     private void addRequiredListeners(IEventBus modBus) {
         modBus.addListener(FMLClientSetupEvent.class, event -> event.enqueueWork(() -> PlacementPreviewHandler.register(PlacementVisualizer.identifier("block_item"), new BlockItemPreviewHandler())));
-        modBus.addListener(RegisterRenderPipelinesEvent.class, event -> event.registerPipeline(PlacementRenderTypes.Pipelines.TRANSLUCENT_NO_DEPTH));
         modBus.addListener(RegisterDebugEntriesEvent.class, event -> event.register(PlacementPreviewRegistry.DEBUG_KEY, new DebugEntryNoop()));
 
         NeoForge.EVENT_BUS.addListener(ExtractLevelRenderStateEvent.class, PlacementPreviewRegistry::extract);
