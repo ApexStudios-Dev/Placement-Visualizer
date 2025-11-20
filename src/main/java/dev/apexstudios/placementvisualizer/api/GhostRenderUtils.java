@@ -20,7 +20,7 @@ import net.minecraft.util.CommonColors;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface GhostRenderUtils {
     static PoseStack toStack(PoseStack.Pose pose) {
@@ -41,17 +41,12 @@ public interface GhostRenderUtils {
     static <T> void submitModel(OrderedSubmitNodeCollector collector, PoseStack poseStack, RenderType renderType, Model<T> model, T modelState, @Nullable TextureAtlasSprite sprite, int light, int overlay, int tintColor, boolean validPlacement) {
         submitGhost(collector, poseStack, PlacementRenderTypes.translucentNoDepth(extractTexture(sprite, renderType)), (stack, consumer) -> {
             model.setupAnim(modelState);
-            model.renderToBuffer(stack, wrap(sprite, consumer), light, overlay, validPlacement ?
-                                                                                tintColor :
-                                                                                CommonColors.SOFT_RED);
+            model.renderToBuffer(stack, wrap(sprite, consumer), light, overlay, validPlacement ? tintColor : CommonColors.SOFT_RED);
         });
     }
 
     static void submitModelPart(OrderedSubmitNodeCollector collector, PoseStack poseStack, RenderType renderType, ModelPart modelPart, @Nullable TextureAtlasSprite sprite, int light, int overlay, int tintColor, boolean validPlacement) {
-        submitGhost(collector, poseStack, PlacementRenderTypes.translucentNoDepth(extractTexture(sprite, renderType)), (stack, consumer) -> modelPart.render(stack, wrap(sprite, consumer), light, overlay,
-                validPlacement ?
-                tintColor :
-                CommonColors.SOFT_RED));
+        submitGhost(collector, poseStack, PlacementRenderTypes.translucentNoDepth(extractTexture(sprite, renderType)), (stack, consumer) -> modelPart.render(stack, wrap(sprite, consumer), light, overlay, validPlacement ? tintColor : CommonColors.SOFT_RED));
     }
 
     static void renderBlockState(PoseStack poseStack, VertexConsumer consumer, BlockAndTintGetter level, BlockPos pos, BlockState blockState, boolean validPlacement) {
@@ -61,14 +56,8 @@ public interface GhostRenderUtils {
         poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
 
         // Copy of MovingBlockRenderState render logic in BlockFeatureRenderer
-        var modelParts = blockRenderDispatcher.getBlockModel(blockState)
-                                              .collectParts(level, pos, blockState, RandomSource.create(blockState.getSeed(pos)));
-
-        blockRenderDispatcher.getModelRenderer()
-                             .tesselateBlock(level, modelParts, blockState, pos, poseStack, consumer, false,
-                                     validPlacement ?
-                                     OverlayTexture.NO_OVERLAY :
-                                     OverlayTexture.pack(OverlayTexture.RED_OVERLAY_V, OverlayTexture.NO_WHITE_U));
+        var modelParts = blockRenderDispatcher.getBlockModel(blockState).collectParts(level, pos, blockState, RandomSource.create(blockState.getSeed(pos)));
+        blockRenderDispatcher.getModelRenderer().tesselateBlock(level, modelParts, blockState, pos, poseStack, consumer, false, validPlacement ? OverlayTexture.NO_OVERLAY : OverlayTexture.pack(OverlayTexture.RED_OVERLAY_V, OverlayTexture.NO_WHITE_U));
 
         poseStack.popPose();
     }
