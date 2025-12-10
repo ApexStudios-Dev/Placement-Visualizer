@@ -1,7 +1,7 @@
 package dev.apexstudios.placementvisualizer.impl;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
@@ -24,11 +24,11 @@ public final class PlacementVisualizer {
         ));
     }
 
-    public static ResourceLocation identifier(String identifier) {
-        return ResourceLocation.fromNamespaceAndPath(ID, identifier);
+    public static Identifier identifier(String identifier) {
+        return Identifier.fromNamespaceAndPath(ID, identifier);
     }
 
     public static String id(String identifier) {
-        return ID + ResourceLocation.NAMESPACE_SEPARATOR + identifier;
+        return ID + Identifier.NAMESPACE_SEPARATOR + identifier;
     }
 }

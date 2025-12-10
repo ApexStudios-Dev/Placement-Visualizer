@@ -3,18 +3,17 @@ package dev.apexstudios.placementvisualizer.api;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.apexstudios.placementvisualizer.impl.GhostVertexConsumer;
-import dev.apexstudios.placementvisualizer.mixin.EmptyTextureStateShardAccessor;
 import java.util.function.BiConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -81,17 +80,15 @@ public interface GhostRenderUtils {
         poseStack.popPose();
     }
 
-    static ResourceLocation extractTexture(@Nullable TextureAtlasSprite sprite, RenderType renderType) {
+    static Identifier extractTexture(@Nullable TextureAtlasSprite sprite, RenderType renderType) {
         if(sprite != null) {
             return sprite.atlasLocation();
         }
 
-        if(renderType instanceof RenderType.CompositeRenderType composite) {
-            var texture = ((EmptyTextureStateShardAccessor) composite.state.textureState).PlacementVisualizer$getCutoutTexture();
+        var texture = renderType.state.textures.get("Sampler0");
 
-            if(texture.isPresent()) {
-                return texture.get();
-            }
+        if(texture != null) {
+            return texture.location();
         }
 
         return TextureAtlas.LOCATION_BLOCKS;
