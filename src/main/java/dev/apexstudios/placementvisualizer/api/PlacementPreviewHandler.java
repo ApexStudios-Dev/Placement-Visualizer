@@ -3,7 +3,7 @@ package dev.apexstudios.placementvisualizer.api;
 import dev.apexstudios.placementvisualizer.impl.PlacementPreviewRegistry;
 import dev.apexstudios.placementvisualizer.impl.node.GhostNodeStorage;
 import net.minecraft.client.renderer.state.LevelRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -18,7 +18,7 @@ public interface PlacementPreviewHandler<TState> {
 
     void submit(RenderLevelStageEvent event, GhostNodeStorage collector, TState state);
 
-    static void register(ResourceLocation registryName, PlacementPreviewHandler<?> handler) {
+    static void register(Identifier registryName, PlacementPreviewHandler<?> handler) {
         PlacementPreviewRegistry.register(registryName, handler);
     }
 }
