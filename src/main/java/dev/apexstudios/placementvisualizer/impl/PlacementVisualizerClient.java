@@ -36,7 +36,7 @@ public final class PlacementVisualizerClient {
 
         // NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterSky.class, PlacementPreviewRegistry::submit);
         // NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterOpaqueBlocks.class, PlacementPreviewRegistry::submit);
-        // NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterEntities.class, PlacementPreviewRegistry::submit);
+        NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterEntities.class, PlacementPreviewRegistry::submit);
         NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterTranslucentBlocks.class, PlacementPreviewRegistry::submit);
         // NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterTripwireBlocks.class, PlacementPreviewRegistry::submit);
         // NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterParticles.class, PlacementPreviewRegistry::submit);
