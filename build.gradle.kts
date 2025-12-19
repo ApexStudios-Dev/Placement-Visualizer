@@ -1,14 +1,15 @@
-import dev.apexstudios.gradle.single.ApexSingleExtension
-
 plugins {
-    id("apex-conventions.neoforge") version "0.1.85"
-    id("apex-conventions.maven-publishing") version "0.1.85"
+    id("apex-conventions.neoforge") version "0.1.92-beta-pr-12"
+    id("apex-conventions.maven-publishing") version "0.1.92-beta-pr-12"
 }
 
 group = "dev.apexstudios"
 
-apex.neoVersion("21.11.0-beta", "1.21.10", "2025.10.12")
-apex.extendCompilerErrors()
+neoForge.enable {
+    version = "26.1.0.0-alpha.1+snapshot-1"
+    isDisableRecompilation = providers.environmentVariable("CI").map(String::toBoolean).getOrElse(false)
+}
 
-val single = ApexSingleExtension.getOrCreate(project)
-single.withDataGen()
+repositories {
+    maven("https://prmaven.neoforged.net/NeoForge/pr2879")
+}
