@@ -45,12 +45,13 @@ public interface PlacementRenderTypes {
         RenderPipeline TRANSLUCENT_NO_DEPTH = RenderPipelines.TRANSLUCENT_MOVING_BLOCK
                 .toBuilder()
                 .withLocation(PlacementVisualizer.identifier("pipeline/translucent_no_depth"))
-                .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+                .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
                 // needed in order for overlay texture to render
                 .withVertexShader("core/entity")
                 .withFragmentShader("core/entity")
                 .withSampler("Sampler1")
                 .withVertexFormat(DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS)
+                .withShaderDefine("EMISSIVE")
                 .build();
     }
 }
