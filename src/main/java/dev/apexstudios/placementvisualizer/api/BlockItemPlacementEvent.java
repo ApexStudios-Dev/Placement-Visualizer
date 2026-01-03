@@ -19,7 +19,7 @@ import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.ICancellableEvent;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class BlockItemPlacementEvent {
     public static final TagKey<Block> RENDERABLES = BlockTags.create(PlacementVisualizer.identifier("renderable"));

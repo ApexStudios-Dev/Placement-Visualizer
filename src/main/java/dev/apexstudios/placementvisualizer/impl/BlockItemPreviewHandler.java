@@ -27,7 +27,7 @@ import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.transfer.item.ItemResource;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 final class BlockItemPreviewHandler implements PlacementPreviewHandler<BlockItemPreviewHandler.State> {
     @Override

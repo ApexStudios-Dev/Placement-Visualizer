@@ -2,7 +2,7 @@ package dev.apexstudios.placementvisualizer.impl;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.util.ARGB;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public final class GhostVertexConsumer implements VertexConsumer {
     public static final GhostVertexConsumer INSTANCE = new GhostVertexConsumer();
