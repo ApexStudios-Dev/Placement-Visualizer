@@ -28,7 +28,7 @@ public final class GhostNodeStorage extends DelegateNodeCollector {
     }
 
     @Override
-    public <S> void submitModel(Model<? super S> model, S renderState, PoseStack poseStack, RenderType renderType, int packedLight, int packedOverlay, int tintColor, @Nullable TextureAtlasSprite sprite, int outlineColor, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+    public <S> void submitModel(Model<? super S> model, S renderState, PoseStack poseStack, RenderType renderType, int packedLight, int packedOverlay, int tintColor, @Nullable TextureAtlasSprite sprite, int outlineColor, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
         GhostRenderUtils.submitModel(this, poseStack, renderType, model, renderState, sprite, packedLight, packedOverlay, tintColor, validPlacement);
     }
 
